@@ -17,7 +17,6 @@ import java.lang.Math;
 public class Controller {
 
     Hashtable<String, String[]> messages = new Hashtable<String, String[]>();
-    Hashtable<String, Integer> userCount = new Hashtable<String, Integer>();
     Hashtable<String, String[]> serverProps = new Hashtable<String, String[]>();
     Hashtable<String, ArrayList<String>> userList = new Hashtable<String, ArrayList<String>>();
     int totalUsers = 0;
@@ -30,10 +29,9 @@ public class Controller {
         String password = obj.getString("password");
         String userName = obj.getString("userName");
         int users = 1;
-        if (userCount.containsKey(channelName) && userCount.get(channelName) > 0){
-            users = userCount.get(channelName);
+        if (userList.containsKey(channelName) && userList.get(channelName).size() > 0){
+            users = userList.get(channelName).size();
             if (users == 0){
-                userCount.put(channelName, 1);
                 String[] props = {maxUsers, password};
                 serverProps.put(channelName, props);
             }
@@ -55,12 +53,10 @@ public class Controller {
                     temp.add(userName);
                     userList.put(channelName, temp);
                 }
-                userCount.put(channelName, users+1);
             }
 
         }
-        else{
-            userCount.put(channelName, users);
+        else{ ;
             String[] props = {maxUsers, password};
             serverProps.put(channelName, props);
             if (userList.containsKey(channelName)){
@@ -82,12 +78,17 @@ public class Controller {
     public ResponseEntity<String> leaveChannel (@RequestBody String requestBody){
         JSONObject obj = new JSONObject(requestBody);
         String channelName = obj.getString("channelName");
-        int users = userCount.get(channelName) - 1;
-        userCount.put(channelName, users);
-        if (users == 0){
+        String userName = obj.getString("userName");
+        int users = userList.get(channelName).size() - 1;
+        if (userList.get(channelName).size() - 1 == 0){
             messages.put(channelName, new String[2]);
             serverProps.put(channelName, new String[2]);
             userList.put(channelName, new ArrayList<String>());
+        }
+        else{
+            ArrayList<String> temp = userList.get(channelName);
+            temp.remove(userName);
+            userList.put(channelName, temp);
         }
         totalUsers--;
         return ResponseEntity.ok("Current users in the server: " + users);
@@ -125,7 +126,7 @@ public class Controller {
         for (int i = 0; i < userNames.size(); i++){
             s.append(userNames.get(i) + "/");
         }
-        return ResponseEntity.ok(userCount.get(channelName) + "-" + s.toString() + "-" + serverProps.get(channelName)[0]);
+        return ResponseEntity.ok(userList.get(channelName).size() + "-" + s.toString() + "-" + serverProps.get(channelName)[0]);
         }catch(Exception e){
             return ResponseEntity.ok(e.toString());
         }
