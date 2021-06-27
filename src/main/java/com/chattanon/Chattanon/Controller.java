@@ -30,7 +30,7 @@ public class Controller {
         String password = obj.getString("password");
         String userName = obj.getString("userName");
         int users = 1;
-        if (userCount.containsKey(channelName)){
+        if (userCount.containsKey(channelName) && userCount.get(channelName) > 0){
             users = userCount.get(channelName);
             if (users == 0){
                 userCount.put(channelName, 1);
@@ -86,6 +86,8 @@ public class Controller {
         userCount.put(channelName, users);
         if (users == 0){
             messages.put(channelName, new String[2]);
+            serverProps.put(channelName, new String[2]);
+            userList.put(channelName, new ArrayList<String>());
         }
         totalUsers--;
         return ResponseEntity.ok("Current users in the server: " + users);
